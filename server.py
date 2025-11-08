@@ -1,7 +1,14 @@
 import socket
 import sys
+import json
 HOST = "127.0.0.1"
 PORT = 65432
+
+
+packet = {
+    "input" : False,
+    "data" : ""
+}
 
 
 class ATM:
@@ -10,9 +17,20 @@ class ATM:
         self.conn = conn
         pass
 
+    def send_json(self, data : str = "", input : bool = False):
+
+        packet = {
+            "input" : input,
+            "data" : data
+        }
+        json_packet = json.dumps(packet).encode('utf-8')
+
+        self.conn.sendall(json_packet)
+        return
     def deposit(self):
 
-        self.conn.sendall(b"Enter the Deposit Amount or \"back\" to leave this function:")
+        self.send_json(data = "Enter the Deposit Amount or \"back\" to leave this function:", input = True)
+
         amount = self.conn.recv(1024).decode('utf-8')
         print(f"[LOG] Received Data: {amount}")
         if(amount == "back"):
@@ -20,22 +38,22 @@ class ATM:
         while not is_float(amount) or float(amount) <= 0:
             if(amount == "back"):
                 return
-            self.conn.sendall(b"Please enter an a valid amount (Not negative and greater than 0) or \"back\" to leave this function:")
+            self.send_json(data = "Please enter an a valid amount (Not negative and greater than 0) or \"back\" to leave this function:", input = True)
             amount = self.conn.recv(1024).decode('utf-8')
             print(f"[LOG] Received Data: {amount}")
 
         amount = float(amount)
         self.balance += amount
-        self.conn.sendall(b"Amount deposited!\nNew Balance: $" + str(self.balance).encode('utf-8') + b"\n")
+        self.send_json(data = f"Amount deposited!\nNew Balance: ${str(self.balance)}\n", input = False)
         return
         
     def withdraw(self):
 
         if(self.balance == 0):
-            self.conn.sendall(b"Cannot process Withdrawal\nCurrent balance is 0\n")
+            self.send_json(data = "Cannot process Withdrawal\nCurrent balance is $0\n", input = False)
             return
 
-        self.conn.sendall(b"Enter the Withdrawal Amount or \"all\" to Withdraw all \"back\" to leave this function\n Current Balance is $" + str(self.balance).encode('utf-8') + b"\n")
+        self.send_json(data = f"Enter the Withdrawal Amount or \"all\" to Withdraw all \"back\" to leave this function\n Current Balance is ${str(self.balance)}\n", input = True)
         amount = self.conn.recv(1024).decode('utf-8')
         print(f"[LOG] Received Data: {amount}")
         if(amount == "back"):
@@ -43,34 +61,34 @@ class ATM:
 
         if(amount == "all"):
             self.balance = 0
-            self.conn.sendall(b"Withdrawal Successful!\n New Balance: $" + str(self.balance).encode('utf-8') + b"\n")
+            self.send_json(data = f"Withdrawal Successful!\n New Balance: ${str(self.balance)}\n", input = False)
             return 
 
         while  not is_float(amount) or float(amount) <= 0 or  self.balance < float(amount):
             if(amount == "back"):
                 return
             if(not is_float(amount) or float(amount) <= 0):
-                self.conn.sendall(b"Please enter an a valid amount (Not negative and greater than 0) or \"back\" to leave this function:")
+                self.send_json(data="Please enter an a valid amount (Not negative and greater than 0) or \"back\" to leave this function:", input = True)
             elif(self.balance < float(amount)):
-                self.conn.sendall(b"Not enough balance\n Current balance: $" + str(self.balance).encode('utf-8') + b"\n Please enter a lower amount or \"back\" to leave this function:")
+                self.send_json(data= f"Not enough balance\n Current balance: ${str(self.balance)} \n Please enter a lower amount or \"back\" to leave this function:", input = True)
             amount = self.conn.recv(1024).decode('utf-8')
             print(f"[LOG] Received Data: {amount}")
         
         if(amount == "all"):
             self.balance = 0
-            self.conn.sendall(b"Withdrawal Successful!\n New Balance: $" + str(self.balance).encode('utf-8') + b"\n")
+            self.send_json(data= f"Withdrawal Successful!\n New Balance: ${str(self.balance)}\n", input= False)
             return 
         
             
         else:
             amount = float(amount)
             self.balance -= amount
-            self.conn.sendall(b"Withdrawal Successful!\n New Balance: $" + str(self.balance).encode('utf-8') + b"\n")
+            self.send_json(data= f"Withdrawal Successful!\n New Balance: ${str(self.balance)}\n", input= False)
             return
 
 
     def check_balance(self):
-         self.conn.sendall(b"Current Balance: $" + str(self.balance).encode('utf-8') + b"\n")
+         self.send_json(data=f"Current Balance: ${str(self.balance)}\n", input= False)
          return
 
 atm = ATM()
@@ -121,7 +139,8 @@ Please enter the numbers associate with the task or enter \"exit\" to exit the p
 
 
     while True:
-        conn.sendall(options.encode('utf-8'))
+
+        atm.send_json(data = options, input = True)
         data = conn.recv(1024)
         if not data:
             return True

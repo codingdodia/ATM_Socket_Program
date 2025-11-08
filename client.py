@@ -1,5 +1,6 @@
 import socket
 import sys
+import json
 
 HOST = '127.0.0.1'  # The server's hostname or IP address
 PORT = 65432        # The port used by the server
@@ -22,27 +23,31 @@ def ATM_process(s: socket.socket) -> bool:
     while(True):
         
         data = s.recv(1024).decode('utf-8')
-        print(data)
-        
-        if("Balance:" not in data and "!!!" not in data):
-            response = input(">>> ")
-
-            if(response == "exit"): # Only exits the client
-                return False 
-            s.sendall(response.encode('utf-8'))
-
-            if(response == "quit"): # Quits both the server and the client, acting as a reset
-             return False
-
-
-        
-        
-        
+        try:
+             data = json.loads(data)
+        except json.JSONDecodeError:
+             print("Error")
+             data = data
         
 
+        
+        if('input' in data and data.get('input') == True):
+             print(data.get('data'))
+             response = input(">>> ")
 
-
+             if(response == "exit"):
+                  return False
+             
+             s.sendall(response.encode('utf-8'))
             
-        
+             if(response == "quit"):
+                  return False
+
+
+        else:
+             print(data.get('data') if 'data' in data else data)
+             
+
+
 if __name__ == "__main__":
      connect()
