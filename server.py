@@ -35,14 +35,14 @@ class ATM:
         print(f"[LOG] Received Data: {amount}")
         if(amount == "back"):
             return
-        while not is_float(amount) or float(amount) <= 0:
+        while not is_int(amount) or int(amount) <= 0:
             if(amount == "back"):
                 return
-            self.send_json(data = "Please enter an a valid amount (Not negative and greater than 0) or \"back\" to leave this function:", input = True)
+            self.send_json(data = "Please enter an a valid amount (Not negative and greater than 0 and an Integer) or \"back\" to leave this function:", input = True)
             amount = self.conn.recv(1024).decode('utf-8')
             print(f"[LOG] Received Data: {amount}")
 
-        amount = float(amount)
+        amount = int(amount)
         self.balance += amount
         self.send_json(data = f"Amount deposited!\nNew Balance: ${str(self.balance)}\n", input = False)
         return
@@ -64,12 +64,12 @@ class ATM:
             self.send_json(data = f"Withdrawal Successful!\n New Balance: ${str(self.balance)}\n", input = False)
             return 
 
-        while  not is_float(amount) or float(amount) <= 0 or  self.balance < float(amount):
+        while  not is_int(amount) or int(amount) <= 0 or  self.balance < int(amount):
             if(amount == "back"):
                 return
-            if(not is_float(amount) or float(amount) <= 0):
-                self.send_json(data="Please enter an a valid amount (Not negative and greater than 0) or \"back\" to leave this function:", input = True)
-            elif(self.balance < float(amount)):
+            if(not is_int(amount) or int(amount) <= 0):
+                self.send_json(data="Please enter an a valid amount (Not negative and greater than 0 and an Integer) or \"back\" to leave this function:", input = True)
+            elif(self.balance < int(amount)):
                 self.send_json(data= f"Not enough balance\n Current balance: ${str(self.balance)} \n Please enter a lower amount or \"back\" to leave this function:", input = True)
             amount = self.conn.recv(1024).decode('utf-8')
             print(f"[LOG] Received Data: {amount}")
@@ -81,7 +81,7 @@ class ATM:
         
             
         else:
-            amount = float(amount)
+            amount = int(amount)
             self.balance -= amount
             self.send_json(data= f"Withdrawal Successful!\n New Balance: ${str(self.balance)}\n", input= False)
             return
@@ -93,9 +93,9 @@ class ATM:
 
 atm = ATM()
 
-def is_float(s: str):
+def is_int(s: str):
     try:
-        float(s)
+        int(s)
     except:
         return False
     return True

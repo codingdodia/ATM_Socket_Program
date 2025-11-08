@@ -7,6 +7,10 @@ This repository contains two runnable scripts at the project root:
 - `server.py` — a simple ATM server that keeps an in-memory balance and interacts with one client at a time.
 - `client.py` — a terminal client that connects to the server and sends user input.
 
+## Grading Process
+
+T
+
 ## Protocol (current implementation)
 
 - The server usually sends JSON-encoded messages. Each JSON object has the shape:
@@ -25,6 +29,14 @@ Notes:
 ## Requirements
 
 - Python 3.8+ (the code was tested with Python 3.11+ but uses only stdlib modules)
+
+## Run - Linux
+
+Open Terminal and run the follwing command
+``` bash
+chmod +x ./run_client.sh
+./run_client.sh
+```
 
 ## Run (Windows PowerShell)
 
@@ -50,11 +62,6 @@ Interact with the client when it prompts. Use `exit` to close only the client; u
   - Keep messages small and run client/server on the same host (reduces chance of splitting).
   - Or use the updated client implementation that catches JSON errors and treats non-JSON as plain text (recommended).
 
-## Recommended improvements (next steps)
-
-1. Framing: send a 4-byte length prefix before JSON payloads so the receiver can read exactly one message at a time. Example pattern: pack length with `struct.pack('!I', len(payload))`, then send header+payload. Receiver reads 4 bytes, unpacks length, then reads length bytes.
-2. Always send JSON (server sends, client replies) so both sides have a well-defined data format. Alternatively, keep the current plain-text replies but document it clearly.
-3. Add simple tests and a small script that demonstrates a full deposit/withdraw flow automatically.
 
 ## Files
 
