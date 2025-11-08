@@ -8,14 +8,9 @@ Due Date: 11/10/205
 import socket
 import sys
 import json
+
 HOST = "127.0.0.1"
 PORT = 65432
-
-
-packet = {
-    "input" : False,
-    "data" : ""
-}
 
 
 class ATM:
@@ -24,6 +19,10 @@ class ATM:
         self.conn = conn
         pass
 
+
+    """
+        Helper function to send the data in a json format
+    """
     def send_json(self, data : str = "", input : bool = False):
 
         packet = {
@@ -34,14 +33,19 @@ class ATM:
 
         self.conn.sendall(json_packet)
         return
+    
     def deposit(self):
 
+        # Ask the user for input
         self.send_json(data = "Enter the Deposit Amount or \"back\" to leave this function:", input = True)
 
         amount = self.conn.recv(1024).decode('utf-8')
         print(f"[LOG] Received Data: {amount}")
+
         if(amount == "back"):
             return
+        
+        # Check for valid input
         while not is_int(amount) or int(amount) <= 0:
             if(amount == "back"):
                 return
@@ -49,17 +53,21 @@ class ATM:
             amount = self.conn.recv(1024).decode('utf-8')
             print(f"[LOG] Received Data: {amount}")
 
+        # Update the balance
         amount = int(amount)
         self.balance += amount
         self.send_json(data = f"Amount deposited!\nNew Balance: ${str(self.balance)}\n", input = False)
         return
         
+    
     def withdraw(self):
 
+        # If balance 0, do not let the user withdraw
         if(self.balance == 0):
             self.send_json(data = "Cannot process Withdrawal\nCurrent balance is $0\n", input = False)
             return
-
+        
+        # Ask the user to input the withdrawal amount
         self.send_json(data = f"Enter the Withdrawal Amount or \"all\" to Withdraw all \"back\" to leave this function\n Current Balance is ${str(self.balance)}\n", input = True)
         amount = self.conn.recv(1024).decode('utf-8')
         print(f"[LOG] Received Data: {amount}")
@@ -71,6 +79,7 @@ class ATM:
             self.send_json(data = f"Withdrawal Successful!\n New Balance: ${str(self.balance)}\n", input = False)
             return 
 
+        # Check for valid input
         while  not is_int(amount) or int(amount) <= 0 or  self.balance < int(amount):
             if(amount == "back"):
                 return
@@ -81,6 +90,7 @@ class ATM:
             amount = self.conn.recv(1024).decode('utf-8')
             print(f"[LOG] Received Data: {amount}")
         
+        # Update balance
         if(amount == "all"):
             self.balance = 0
             self.send_json(data= f"Withdrawal Successful!\n New Balance: ${str(self.balance)}\n", input= False)
@@ -94,13 +104,15 @@ class ATM:
             return
 
 
+    # Return the balance value
     def check_balance(self):
          self.send_json(data=f"Current Balance: ${str(self.balance)}\n", input= False)
          return
 
 atm = ATM()
 
-def is_int(s: str):
+# Helper function to check if a string is int
+def is_int(s: str) -> bool:
     try:
         int(s)
     except:
@@ -134,6 +146,8 @@ def connect():
                     # exit the program gracefully
                     sys.exit()
 
+
+# Main entry point
 def ATM_process(conn) -> bool:
 
     options = '''Welcome to the ATM!
@@ -144,7 +158,6 @@ Please enter the numbers associate with the task or enter \"exit\" to exit the p
 
     atm.conn = conn # Set the current connection to the ATM's connection
 
-
     while True:
 
         atm.send_json(data = options, input = True)
@@ -154,7 +167,7 @@ Please enter the numbers associate with the task or enter \"exit\" to exit the p
         data = data.decode('utf-8').strip()
         print(f"[LOG] Received data: {data}")
 
-
+        # Run the appropiate function depeding on the user input
         match data:
             case '1':
                 atm.deposit()

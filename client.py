@@ -14,6 +14,8 @@ PORT = 65432        # The port used by the server
 
 def connect():
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            
+            # Check if the server is running and connect if it is
             try:
                 s.connect((HOST, PORT))
             except ConnectionRefusedError:
@@ -26,6 +28,8 @@ def connect():
                  sys.exit()
 
 
+
+# Main program used for talking to the server
 def ATM_process(s: socket.socket) -> bool:
     while(True):
         
@@ -37,7 +41,7 @@ def ATM_process(s: socket.socket) -> bool:
              data = data
         
 
-        
+        # If Input bool True, ask the user for input else print the sever response
         if('input' in data and data.get('input') == True):
              print(data.get('data'))
              response = input(">>> ")
