@@ -1,3 +1,10 @@
+"""
+Name: Dhairya Dodia
+UARK Id: 100455306
+Assignment: ATM Socket Program
+Due Date: 11/10/205
+"""
+
 import socket
 import sys
 import json

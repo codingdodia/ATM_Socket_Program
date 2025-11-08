@@ -1,3 +1,10 @@
+# 
+# Name: Dhairya Dodia
+# UARK Id: 100455306
+# Assignment: ATM Socket Program
+# Due Date: 11/10/205
+# 
+
 #!/usr/bin/env bash
 # Start server and save output to server.log
 python3 server.py > server.log 2>&1 &
